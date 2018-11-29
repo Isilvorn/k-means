@@ -1,0 +1,11 @@
+Exit Program
+Read Data (from current file)
+Switch Current file to "A.txt"
+Switch Current file to "B.txt"
+Enter in another file
+Set a new K (# of clusters)
+Set a new # of Max Iterations
+Iterate to solution
+Print Data Points to stdout
+Print Centroids to stdout
+Write scatterplot to file ("setdata.js")

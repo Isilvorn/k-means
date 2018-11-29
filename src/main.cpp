@@ -13,6 +13,8 @@ using namespace std;
 default_random_engine              gen;
 uniform_real_distribution<double>  distr(0.0,1.0);
 
+#define EPSILON 0.0001
+
 /*
 ** The Point struct is a container for the x-y pairs that make up the data set.
 */
@@ -30,8 +32,9 @@ public:
 
     Point& operator+=(const Point &rhs) { data[0] += rhs.data[0]; data[1] += rhs.data[1]; }
     Point& operator/=(double d)         { data[0] /= d; data[1] /= d; }
-    Point& operator=(const Point &rhs)  { data[0] = rhs.data[0]; data[1] = rhs.data[1]; gp = rhs.gp; }
-  	double operator[](int n) const      { return (((n>=0) && (n<2))?data[n]:0);                      }
+    Point& operator=(const Point &rhs)  { data[0] = rhs.data[0]; data[1] = rhs.data[1]; gp = rhs.gp;     }
+    bool   operator==(const Point &rhs) { return ((data[0] == rhs.data[0]) && (data[1] == rhs.data[1])); }
+  	double operator[](int n) const      { return (((n>=0) && (n<2))?data[n]:0);                          }
 
   	friend ostream& operator<<(ostream&,const Point&); // outputs all elements to a stream
   	friend istream& operator>>(istream&, Point&);      // inputs 2 elements from a stream
@@ -161,7 +164,7 @@ int main(void) {
 	int    idx = 0;
 	int    K = 3;
 	int    iter = 10;
-	int    c, g;
+	int    i, c, g;
 	bool   flag;
 	double xmax, xmin, ymax, ymin, d, dmin;
 	string inputFile = "data/A.txt";
@@ -195,7 +198,7 @@ int main(void) {
 				cout << "Enter in a new max iterations (integer): ";
 				cin  >> iter;
 				break;
-			case 7:   // Iterate to a solution
+			case 7:   // Iterate to a solution using k-means
 				if (pointlist.size() == 0) flag = ReadInput(inputFile, pointlist, false); else flag = true;
 				if (flag) {
 					// generating a random set of centroids
@@ -208,6 +211,8 @@ int main(void) {
 						p1.rand(xmin,xmax,ymin,ymax);
 						it = pointlist.begin();
 						dmin = sqrt((xmax-xmin)*(xmax-xmin) + (ymax-ymin)*(ymax-ymin));
+						// picking the closest point in the data set to the random point
+						// to help avoid empty clusters
 						while (it != pointlist.end()) {
 							d = dist(p1,(*it));
 							if (d < dmin) { dmin = d; p2 = *it; p2.group(i+1); }
@@ -216,8 +221,10 @@ int main(void) {
 						centroids.push_back(p2);
 					} // end for (i)
 
-					for (int i=0; i < iter; i++) {
-						// updating data point groups
+					// iterate over max iterations to a solution
+					for (i=0; i < iter; i++) {
+						// updating data point groups according to which centroid is closest
+						// to the point
 						it = pointlist.begin();
 						while (it != pointlist.end()) {
 							p1 = *it;
@@ -233,8 +240,9 @@ int main(void) {
 							it++;
 						} // end while (it)
 
-						// updating centroids
-						it2 = centroids.begin();
+						// updating centroids according to the center of gravity of the groups
+						flag = true;
+						it2  = centroids.begin();
 						while (it2 != centroids.end()) {
 							p2 = *it2;
 							p1.clear();
@@ -249,13 +257,20 @@ int main(void) {
 								it++;
 							} // end while (it)
 							p1 /= c;
-							(*it2) = p1;
+							if (dist((*it2),p1) > EPSILON) { (*it2) = p1; flag=false; }
 							it2++;
 						} // end while (it2)
+
+						// break out of the loop if all of the centroids are the same from the
+						// last iteration
+						if (flag) break; 
 					} // end for (i) 
+					cout << "Converged after " << i << " iterations." << endl;
 				} // end if (flag)
 				break;
-			case 8:   // Display the data points by sending them to stdout
+			case 8:   // Assemble agglomerative heirarchichal clusters
+				break;
+			case 9:   // Display the data points by sending them to stdout
 				cout << "Data Points" << endl;
 				cout << "===========" << endl;
 				it = pointlist.begin();
@@ -264,7 +279,7 @@ int main(void) {
 					it++;
 				}
 				break;
-			case 9:   // Display the centroids by sending them to stdout
+			case 10:   // Display the centroids by sending them to stdout
 				cout << "Centroids" << endl;
 				cout << "=========" << endl;
 				it = centroids.begin();
@@ -274,7 +289,7 @@ int main(void) {
 				}
 				cout << endl << "SSE = " << SSEcalc(pointlist, centroids) << endl << endl;				
 				break;
-			case 10:  // write data to file
+			case 11:  // write data to file
 				if (pointlist.size() > 0) {
 					xmax = maxX(pointlist);
 					xmin = minX(pointlist);

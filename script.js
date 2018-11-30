@@ -46,7 +46,8 @@ var r = d3.scale.linear()
           .range([3, 8]);
 
 function col(idx) {
-    switch (idx) {
+    i = idx%15 + 1;
+    switch (i) {
         case 1:  return "#0000FF"; break; // blue
         case 2:  return "#32CD32"; break; // lime green
         case 3:  return "#FF0000"; break; // red
@@ -95,3 +96,32 @@ svg.append("text")
     .text("SSE: " + plot_parms[5])
     .attr("font-size", "20px")
     .attr("font-family", "sans-serif")
+
+var titleHTML = document.getElementById("title");
+var subtitleHTML = document.getElementById("subtitle");
+switch (plot_parms[6]) {
+    case 0:
+        titleHTML.innerHTML = "CS822 K-Means Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5, Exercise #1"
+        break;
+    case 1:
+        titleHTML.innerHTML = "CS822 Agglomerative MIN Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5, Exercise #2a"
+        break;
+    case 2:
+        titleHTML.innerHTML = "CS822 Agglomerative MAX Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5, Exercise #2b"
+        break;
+    case 3:
+        titleHTML.innerHTML = "CS822 Agglomerative GAVG Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5, Exercise #2c"
+        break;
+    case 4:
+        titleHTML.innerHTML = "CS822 Agglomerative CENTR Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5, Exercise #2d"
+        break;
+    default:
+        titleHTML.innerHTML = "CS822 Solution Plot"
+        subtitleHTML.innerHTML = "Homework #5"
+
+}
